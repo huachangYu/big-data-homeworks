@@ -1,8 +1,8 @@
 package com.yuhuachang;
 
 import java.io.IOException;
-
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;
@@ -10,6 +10,7 @@ import org.apache.hadoop.hbase.client.ColumnFamilyDescriptorBuilder;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.client.TableDescriptorBuilder;
@@ -54,6 +55,7 @@ public class HbaseController {
                 }
             }
             table.put(puts);
+            table.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -65,9 +67,22 @@ public class HbaseController {
             table = connection.getTable(TableName.valueOf(tableName));
             Delete delete = new Delete(Bytes.toBytes(rowKey));
             table.delete(delete);
+            table.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public Cell[] getDataRow(String tableName, String rowKey) {
+        try {
+            Table table = connection.getTable(TableName.valueOf(tableName));
+            Cell[] cells = table.get(new Get(Bytes.toBytes(rowKey))).rawCells();
+            table.close();
+            return cells;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void open() {
